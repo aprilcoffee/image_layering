@@ -17,23 +17,27 @@ exit_event = threading.Event()
 fileName = 'Null'
 done = False
 
-offset = 100
-transparency = 0.1
+#init random image
+output = numpy.random.randint(0,256,(480,640,3), dtype=numpy.uint8)
+
+#offset = 100
+#transparency = 0.1
 quality_option = ""
 
-def browseFiles():
+def browseCam():
     global fileName
-    #fileName = filedialog.askopenfilename(initialdir="/",title="select movie file",filetypes=[("ALL FILES","*.*"),("video file","*.py"),])
-    fileName = filedialog.askopenfilename(title="select movie file")
-    fileName_label.configure(text="File Opened: "+fileName)
+
+def savePhoto():
+    global output
+
 
 def startProgram():
-    global offset
+    #global offset
     #global transparency
 
-    offset = int(input_offset.get())
+    #offset = int(input_offset.get())
     #transparency = float(input_transparent.get())
-    quality_option = str(input_quality.get())
+    #quality_option = str(input_quality.get())
 
     if(fileName!='Null'):
         #button_explore.place_forget()
@@ -44,11 +48,9 @@ def startProgram():
     else:
         print('false')
 
-def stopProgram():
+def restartProgram():
     exit_event.set()
 
-def savingPhoto():
-    print('saved')
 
 def processImage():
     global fileName
@@ -56,14 +58,13 @@ def processImage():
     global done
     img_queue = []
 
-    uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
-    outputDir = uppath(fileName,1)
-    if not os.path.exists(outputDir+'/processedImage'):
-        os.makedirs(outputDir+'/processedImage')
+    #uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+    #outputDir = uppath(fileName,1)
+    #if not os.path.exists(outputDir+'/processedImage'):
+    #    os.makedirs(outputDir+'/processedImage')
 
-
-    index = 0
-    vidcap = cv2.VideoCapture(fileName)
+    #index = 0
+    vidcap = cv2.VideoCapture(1)
     #success, image = vidcap.read()
     ret, frame = vidcap.read()
 
@@ -74,13 +75,14 @@ def processImage():
     img_base_raw = Image.fromarray(img_base)
     output = Image.new("RGB",img_base_raw.size,(255,255,255,255))
     output.paste(img_base_raw)
-    count_label.configure(text="Image: "+str(index))
+    #count_label.configure(text="Image: "+str(index))
 
-    img_queue.append(img_base_float)
+    #img_queue.append(img_base_float)
     #show image
-    #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-    #canvas.create_image(200,100,image=img,anchor=NW)
+    img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
+    canvas.create_image(200,100,image=img,anchor=NW)
 
+    '''
     if(quality_option=='Fast'):
         output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
     elif(quality_option=='Default'):
@@ -94,187 +96,31 @@ def processImage():
 
     img_trans = Image.fromarray(img_base)
     img_trans_float = img_base_float
-
-    while True:
-        print("processing image:"+str(index))
-        index +=1
-        ret, frame=vidcap.read()
-
-        #Ending last photo without blending
-        if not ret and (len(img_queue) == 2):
-            #last blending
-            img_blend_float = lighten_only(img_queue[0],img_queue[1],0.5)
-            img_blend = numpy.uint8(img_blend_float)
-            img_blend_raw=Image.fromarray(img_blend)
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-            output.paste(img_blend_raw)
-            if(quality_option=='Fast'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-            else:
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-            #last Image
-            index += 1
-            img_blend_float = img_queue[1]
-            img_blend = numpy.uint8(img_blend_float)
-            img_blend_raw=Image.fromarray(img_blend)
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-            output.paste(img_blend_raw)
-            if(quality_option=='Fast'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-            else:
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-            break
-
-        #Ending photos, poping queue
-        elif not ret:
-            img_queue.pop(0)
-            img_temp_base_float = img_queue[0]
-            for i in range(1,len(img_queue)):
-                img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],0.5)
-                img_temp_base_float = img_temp_blend_float
-            img_blend_float = img_temp_base_float
-            img_blend = numpy.uint8(img_blend_float)
-            img_blend_raw=Image.fromarray(img_blend)
-            #counter
-            count_label.configure(text="Ending Image: "+str(index))
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-            output.paste(img_blend_raw)
-            if(quality_option=='Fast'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-            else:
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-
-        #normal execution
-        else:
-            img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-            img_layer[:, :, 3] = 255.
-            img_layer_float = img_layer.astype(numpy.float32)
-
-            #add to array
-            img_queue.append(img_layer_float)
-
-            if(index < offset):
-                img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
-            else:
-                img_queue.pop(0)
-                img_temp_base_float = img_queue[0]
-                for i in range(1,len(img_queue)):
-                    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],0.5)
-                    img_temp_base_float = img_temp_blend_float
-                img_blend_float = img_temp_base_float
-
-            img_blend = numpy.uint8(img_blend_float)
-            img_blend_raw=Image.fromarray(img_blend)
-
-            #counter
-            count_label.configure(text="Image: "+str(index))
-
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-            output.paste(img_blend_raw)
-            if(quality_option=='Fast'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-            else:
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-            #reset base
-            img_base_float = img_blend_float
-
-            #show Image
-            #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-            #canvas.create_image(200,100,image=output,anchor=NW)
-
-
-        if exit_event.is_set():
-            index = 0
-            #output = Image.new("RGB",img_trans.size,(255,255,255,255))
-            #output.paste(img_trans)
-            #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-            #canvas.create_image(200,100,image=img,anchor=NW)
-            count_label.configure(text="Image: "+str(index))
-            exit_event.clear()
-            break
-
     '''
-    base_img_raw = Image.fromarray(frame)
-    base_img_raw.putalpha(255)
-    base_img = numpy.array(base_img_raw)
-    base_img_float = base_img.astype(float)
-
-    transparent_img_raw = base_img_raw
-    transparent_img = base_img
-    transparent_img_float = base_img_float
-
-
-    base_img = numpy.uint8(base_img_float)
-    base_img = cv2.cvtColor(base_img, cv2.COLOR_BGR2RGB)
-    base_img_raw=Image.fromarray(base_img)
-    output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
-    output.paste(base_img_raw)
-    img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-    canvas.create_image(200,100,image=img,anchor=NW)
-    count_label.configure(text="Image: "+str(index))
-
-    if(quality_option=='Fast'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-    elif(quality_option=='Default'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-    elif(quality_option=='High'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-    elif(quality_option=='Original'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-    else:
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
 
     while True:
-        index +=1
-
-        print("processing image:"+str(index))
+        #print("processing image:"+str(index))
+        #index +=1
         ret, frame=vidcap.read()
-        if not ret:
-            break
 
-        layer_img_raw = Image.fromarray(frame)
-        layer_img_raw.putalpha(255)
-        layer_img = numpy.array(layer_img_raw)
-        layer_img_float = layer_img.astype(float)
+        img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img_layer[:, :, 3] = 255.
+        img_layer_float = img_layer.astype(numpy.float32)
+        img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
+        img_blend = numpy.uint8(img_blend_float)
+        img_blend_raw=Image.fromarray(img_blend)
 
-        blend_img_float = lighten_only(base_img_float,layer_img_float,0.5)
-        if(index >= offset):
-            blend_img_float = normal(blend_img_float,transparent_img_float,transparency)
+        #counter
+        #count_label.configure(text="Image: "+str(index))
+        output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+        output.paste(img_blend_raw)
 
-        blend_img = numpy.uint8(blend_img_float)
-        blend_img = cv2.cvtColor(blend_img, cv2.COLOR_BGR2RGB)
-        blend_img_raw=Image.fromarray(blend_img)
+        img_base_float = img_blend_float
+        #show Image
+        img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
+        canvas.create_image(200,100,image=output,anchor=NW)
 
-        output = Image.new("RGB",blend_img_raw.size,(255,255,255,255))
-        output.paste(blend_img_raw)
+        '''
         if(quality_option=='Fast'):
             output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
         elif(quality_option=='Default'):
@@ -285,46 +131,46 @@ def processImage():
             output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
         else:
             output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
+        '''
+        #reset base
 
-        base_img_float = blend_img_float
-        img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-        canvas.create_image(200,100,image=img,anchor=NW)
-        count_label.configure(text="Image: "+str(index))
+
 
         if exit_event.is_set():
-            index = 0
-            output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
-            output.paste(base_img_raw)
-            img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-            canvas.create_image(200,100,image=img,anchor=NW)
-            count_label.configure(text="Image: "+str(index))
+            vidcap.release()
+            #index = 0
+            #output = Image.new("RGB",img_trans.size,(255,255,255,255))
+            #output.paste(img_trans)
+            #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
+            #canvas.create_image(200,100,image=img,anchor=NW)
+            #count_label.configure(text="Image: "+str(index))
             exit_event.clear()
             break
-    '''
+
     done = True
 
 
 root = Tk()
 root.title('image layering')
 
-canvas = Canvas(root,width=400,height=700)
+canvas = Canvas(root,width=1000,height=700)
 canvas.pack()
 
-button_explore = Button(root,width=10,text="select File",command=browseFiles)
+button_explore = Button(root,width=10,text="select File",command=browseCam)
 button_explore.place(x=8,y=15)
 
-fileName_label = Label(root,text="")
-fileName_label.place(x=8,y=40)
+camName_label = Label(root,text="")
+camName_label.place(x=8,y=40)
 
-input_offset = tk.StringVar(root)
-input_transparent = tk.StringVar(root)
-input_quality = tk.StringVar()
+#input_offset = tk.StringVar(root)
+#input_transparent = tk.StringVar(root)
+#input_quality = tk.StringVar()
 
-offset_label = Label(root,text="疊加層數")
-offset_label.place(x=8,y=80)
-offset_input = Entry(root,width=10, textvariable=input_offset)
-offset_input.insert(10,60)
-offset_input.place(x=10,y=100)
+#offset_label = Label(root,text="疊加層數")
+#offset_label.place(x=8,y=80)
+#offset_input = Entry(root,width=10, textvariable=input_offset)
+#offset_input.insert(10,60)
+#offset_input.place(x=10,y=100)
 
 #transparent_label = Label(root,text="漸層程度 (0.00 ~ 1.00)")
 #transparent_label.place(x=8,y=140)
@@ -332,27 +178,31 @@ offset_input.place(x=10,y=100)
 #transparent_input.insert(10,0.1)
 #transparent_input.place(x=8,y=160)
 
-quality_label = Label(root,text="輸出品質")
-quality_label_selection = Label(root,text="F:快速 D:一般 H:高解析 O:原檔")
-quality_label.place(x=8,y=200)
-quality_label_selection.place(x=8,y=220)
+#quality_label = Label(root,text="輸出品質")
+#quality_label_selection = Label(root,text="F:快速 D:一般 H:高解析 O:原檔")
+#quality_label.place(x=8,y=200)
+#quality_label_selection.place(x=8,y=220)
 
-quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
-quality_input['values'] = ('Fast',
-                          'Default',
-                          'High',
-                          'Original',
-                          )
-quality_input.place(x=8,y=240)
-quality_input.current(0)
+#quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
+#quality_input['values'] = ('Fast',
+#                          'Default',
+#                          'High',
+#                          'Original',
+#                          )
+#quality_input.place(x=8,y=240)
+#quality_input.current(0)
 
-button_start = Button(root,width=10,text="start",command=startProgram)
+button_start = Button(root,width=10,text="Start",command=startProgram)
 button_start.place(x=8,y=300)
 
-count_label = Label(root,text="")
-count_label.place(x=8,y=330)
+#count_label = Label(root,text="")
+#count_label.place(x=8,y=330)
 
-button_stop = Button(root,width=10,text="Restart",command=stopProgram)
+
+#button_save = Button(root,width=10,text="Save",command=savePhoto)
+#button_save.place(x=8,y=330)
+
+button_stop = Button(root,width=10,text="Restart",command=restartProgram)
 button_stop.place(x=8,y=370)
 
 #base_img_float = base_img.astype(float)
