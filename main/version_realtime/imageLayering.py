@@ -25,7 +25,7 @@ def returnCameraIndexes():
 print(returnCameraIndexes())
 
 new = False
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 #cap.set(cv2.CV_CAP_PROP_FPS,30)
 #while True:
 #ret = cap.set(0,720)
