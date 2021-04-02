@@ -29,126 +29,47 @@ def browseCam():
 
 def savePhoto():
     global output
-
-
 def startProgram():
-    #global offset
-    #global transparency
-
-    #offset = int(input_offset.get())
-    #transparency = float(input_transparent.get())
-    #quality_option = str(input_quality.get())
-
-    if(fileName!='Null'):
-        #button_explore.place_forget()
-        x = threading.Thread(target=processImage, args=())
-        x.daemon=True
-        x.start()
-        #x.join()
-    else:
-        print('false')
+	x = threading.Thread(target=processImage, args=())
+	x.daemon=True
+	x.start()
 
 def restartProgram():
-    exit_event.set()
-
+	exit_event.set()
 
 def processImage():
-    global fileName
-    global exit_event
-    global done
-    img_queue = []
-
-    #uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
-    #outputDir = uppath(fileName,1)
-    #if not os.path.exists(outputDir+'/processedImage'):
-    #    os.makedirs(outputDir+'/processedImage')
-
-    #index = 0
-    vidcap = cv2.VideoCapture(1)
-    #success, image = vidcap.read()
-    ret, frame = vidcap.read()
-
-    img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-    img_base[:, :, 3] = 255.
-    img_base_float = img_base.astype(numpy.float32)
-    img_base = numpy.uint8(img_base_float)
-    img_base_raw = Image.fromarray(img_base)
-    output = Image.new("RGB",img_base_raw.size,(255,255,255,255))
-    output.paste(img_base_raw)
-    #count_label.configure(text="Image: "+str(index))
-
-    #img_queue.append(img_base_float)
-    #show image
-    img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-    canvas.create_image(200,100,image=img,anchor=NW)
-
-    '''
-    if(quality_option=='Fast'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-    elif(quality_option=='Default'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-    elif(quality_option=='High'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-    elif(quality_option=='Original'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-    else:
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-    img_trans = Image.fromarray(img_base)
-    img_trans_float = img_base_float
-    '''
-
-    while True:
-        #print("processing image:"+str(index))
-        #index +=1
-        ret, frame=vidcap.read()
-
-        img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        img_layer[:, :, 3] = 255.
-        img_layer_float = img_layer.astype(numpy.float32)
-        img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
-        img_blend = numpy.uint8(img_blend_float)
-        img_blend_raw=Image.fromarray(img_blend)
-
-        #counter
-        #count_label.configure(text="Image: "+str(index))
-        output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-        output.paste(img_blend_raw)
-
-        img_base_float = img_blend_float
-        #show Image
-        img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-        canvas.create_image(200,100,image=output,anchor=NW)
-
-        '''
-        if(quality_option=='Fast'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-        elif(quality_option=='Default'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-        elif(quality_option=='High'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-        elif(quality_option=='Original'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-        else:
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-        '''
-        #reset base
-
-
-
-        if exit_event.is_set():
-            vidcap.release()
-            #index = 0
-            #output = Image.new("RGB",img_trans.size,(255,255,255,255))
-            #output.paste(img_trans)
-            #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-            #canvas.create_image(200,100,image=img,anchor=NW)
-            #count_label.configure(text="Image: "+str(index))
-            exit_event.clear()
-            break
-
-    done = True
-
+	global fileName
+	global exit_event
+	global done
+	print('start processing')
+	new = False
+	vidcap = cv2.VideoCapture(0)
+	while (vidcap.isOpened()):
+		ret, frame=vidcap.read()
+		if (new == False):
+			img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+			img_base[:, :, 3] = 255.
+			img_base_float = img_base.astype(numpy.float32)
+			img_base = numpy.uint8(img_base_float)
+			img_base_raw = Image.fromarray(img_base)
+			new = True
+		cv2.waitKey(100)&0xFF
+		img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+		img_layer[:, :, 3] = 255
+		img_layer_float = img_layer.astype(numpy.float32)
+		img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
+		img_blend = numpy.uint8(img_blend_float)
+		img_blend_raw=Image.fromarray(img_blend)
+		output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+		output.paste(img_blend_raw)
+		img_base_float = img_blend_float
+		img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
+		canvas.create_image(200,100,image=output,anchor=NW)
+		if (exit_event.is_set()):
+			vidcap.release()
+			exit_event.clear()
+			break
+	done = True
 
 root = Tk()
 root.title('image layering')
