@@ -64,41 +64,6 @@ def processImage():
     #success, image = vidcap.read()
     ret, frame = vidcap.read()
 
-    '''
-    img_base = frame.astype(float)
-    b_channel, g_channel, r_channel = cv2.split(img_base)
-    alpha_channel = numpy.ones(b_channel.shape, dtype=b_channel.dtype) * 50 #creating a dummy alpha channel image.
-    img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
-    img_base = img_BGRA.astype(float)
-
-    #img_base = frame.astype(float)
-    img_trans = img_base
-    while True:
-        print("processing image:"+str(index))
-        index +=1
-        ret, frame=vidcap.read()
-        if not ret:
-            break
-
-        img_layer = frame.astype(float)
-        b_channel, g_channel, r_channel = cv2.split(img_layer)
-        alpha_channel = numpy.ones(b_channel.shape, dtype=b_channel.dtype) * 50 #creating a dummy alpha channel image.
-        img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
-        img_layer = img_BGRA.astype(float)
-
-        img_blend = lighten_only(img_base,img_layer,0.5)
-        if(index >= offset):
-            img_blend = normal(img_blend,img_trans,transparency)
-
-        img_blend = numpy.uint8(img_blend)
-        img_blend_raw=Image.fromarray(img_blend)
-
-        output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-        output.paste(img_blend_raw)
-        #output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')#,quality='web_maximum',subsampling=0)
-        img_base = img_blend
-
-    '''
     base_img_raw = Image.fromarray(frame)
     base_img_raw.putalpha(255)
     base_img = numpy.array(base_img_raw)
@@ -170,7 +135,7 @@ def processImage():
         canvas.create_image(200,100,image=img,anchor=NW)
         count_label.configure(text="Image: "+str(index))
 
-    
+
         if exit_event.is_set():
             index = 0
             output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
