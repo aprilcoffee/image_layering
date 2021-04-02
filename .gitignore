@@ -1,0 +1,11 @@
+## build
+build/
+
+## dist
+dist/
+
+## mac
+.DS_Store
+
+## eggs
+.egg
