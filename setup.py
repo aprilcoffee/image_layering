@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['main/version_realtime/imageLayering.py']
+APP = ['main/version_cv2_nofadeout/imageLayering.py']
 DATA_FILES = []
 OPTIONS = {}
 
