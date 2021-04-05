@@ -313,7 +313,7 @@ input_mode = tk.StringVar(root)
 transparent_label = Label(root,text="漸層程度 (0.00 ~ 1.00)")
 transparent_label.place(x=8,y=60)
 transparent_input = Entry(root,width=10,textvariable=input_transparent)
-transparent_input.insert(10,0.1)
+transparent_input.insert(10,0.5)
 transparent_input.place(x=8,y=80)
 
 mode_label = Label(root,text="疊加模式")
