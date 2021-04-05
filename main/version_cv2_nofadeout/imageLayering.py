@@ -3,6 +3,19 @@ import glob, os
 import numpy
 from blend_modes import normal
 from blend_modes import lighten_only
+from blend_modes import soft_light
+from blend_modes import dodge
+from blend_modes import addition
+from blend_modes import darken_only
+from blend_modes import multiply
+from blend_modes import hard_light
+from blend_modes import difference
+from blend_modes import subtract
+from blend_modes import grain_extract
+from blend_modes import grain_merge
+from blend_modes import divide
+from blend_modes import overlay
+from blend_modes import normal
 
 from tkinter import *
 import tkinter as tk
@@ -22,6 +35,7 @@ done = False
 offset = 100
 transparency = 0.1
 quality_option = ""
+blendmode = ""
 
 def browseFiles():
     global fileName
@@ -31,11 +45,13 @@ def browseFiles():
 
 def startProgram():
     global offset
-    #global transparency
+    global transparency
+    global blendmode
 
     #offset = int(input_offset.get())
-    #transparency = float(input_transparent.get())
+    transparency = float(input_transparent.get())
     quality_option = str(input_quality.get())
+    blendmode = str(input_mode.get())
 
     if(fileName!='Null'):
         #button_explore.place_forget()
@@ -111,11 +127,42 @@ def processImage():
             img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
             img_layer[:, :, 3] = 255.
             img_layer_float = img_layer.astype(numpy.float32)
-
             #add to array
             #img_queue.append(img_layer_float)
 
-            img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
+            #change modes
+            if(blendmode=='soft_light'):
+                img_blend_float = soft_light(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='lighten_only'):
+                img_blend_float = lighten_only(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='dodge'):
+                img_blend_float = dodge(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='addition'):
+                img_blend_float = addition(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='darken_only'):
+                img_blend_float = darken_only(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='multiply'):
+                img_blend_float = multiply(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='hard_light'):
+                img_blend_float = hard_light(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='difference'):
+                img_blend_float = difference(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='subtract'):
+                img_blend_float = subtract(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='grain_extract'):
+                img_blend_float = grain_extract(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='grain_merge'):
+                img_blend_float = grain_merge(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='divide'):
+                img_blend_float = divide(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='overlay'):
+                img_blend_float = overlay(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='normal'):
+                img_blend_float = normal(img_base_float,img_layer_float,transparency)
+            else:
+                img_blend_float = normal(img_base_float,img_layer_float,transparency)
+
+            #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
             img_blend = numpy.uint8(img_blend_float)
             img_blend_raw=Image.fromarray(img_blend)
 
@@ -139,10 +186,12 @@ def processImage():
             img_base_float = img_blend_float
             if(index%30==0):
                 gc.collect()
- 
+
             #show Image
             #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
             #canvas.create_image(200,100,image=output,anchor=NW)
+        else:
+            count_label.configure(text="End")
 
         if exit_event.is_set():
             index = 0
@@ -252,7 +301,8 @@ fileName_label.place(x=8,y=40)
 
 input_offset = tk.StringVar(root)
 input_transparent = tk.StringVar(root)
-input_quality = tk.StringVar()
+input_quality = tk.StringVar(root)
+input_mode = tk.StringVar(root)
 
 #offset_label = Label(root,text="疊加層數")
 #offset_label.place(x=8,y=80)
@@ -260,16 +310,37 @@ input_quality = tk.StringVar()
 #offset_input.insert(10,60)
 #offset_input.place(x=10,y=100)
 
-#transparent_label = Label(root,text="漸層程度 (0.00 ~ 1.00)")
-#transparent_label.place(x=8,y=140)
-#transparent_input = Entry(root,width=10,textvariable=input_transparent)
-#transparent_input.insert(10,0.1)
-#transparent_input.place(x=8,y=160)
+transparent_label = Label(root,text="漸層程度 (0.00 ~ 1.00)")
+transparent_label.place(x=8,y=60)
+transparent_input = Entry(root,width=10,textvariable=input_transparent)
+transparent_input.insert(10,0.1)
+transparent_input.place(x=8,y=80)
+
+mode_label = Label(root,text="疊加模式")
+mode_label.place(x=8,y=120)
+mode_input = ttk.Combobox(root, width = 10, textvariable = input_mode)
+mode_input['values'] = ('soft_light',
+                          'lighten_only',
+                          'dodge',
+                          'addition',
+                          'darken_only',
+                          'multiply',
+                          'hard_light',
+                          'difference',
+                          'subtract',
+                          'grain_extract',
+                          'grain_merge',
+                          'divide',
+                          'overlay',
+                          'normal',
+                          )
+mode_input.place(x=8,y=140)
+mode_input.current(0)
 
 quality_label = Label(root,text="輸出品質")
 quality_label_selection = Label(root,text="F:快速 D:一般 H:高解析 O:原檔")
-quality_label.place(x=8,y=200)
-quality_label_selection.place(x=8,y=220)
+quality_label.place(x=8,y=240)
+quality_label_selection.place(x=8,y=260)
 
 quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
 quality_input['values'] = ('Fast',
@@ -277,17 +348,17 @@ quality_input['values'] = ('Fast',
                           'High',
                           'Original',
                           )
-quality_input.place(x=8,y=240)
+quality_input.place(x=8,y=280)
 quality_input.current(0)
 
 button_start = Button(root,width=10,text="start",command=startProgram)
-button_start.place(x=8,y=300)
+button_start.place(x=8,y=360)
 
 count_label = Label(root,text="")
-count_label.place(x=8,y=330)
+count_label.place(x=8,y=390)
 
 button_stop = Button(root,width=10,text="Restart",command=stopProgram)
-button_stop.place(x=8,y=370)
+button_stop.place(x=8,y=420)
 
 #base_img_float = base_img.astype(float)
 root = mainloop()
