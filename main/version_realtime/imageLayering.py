@@ -34,8 +34,8 @@ index = 0
 
 while(cap.isOpened()):
     ret,frame = cap.read()
-    print(index)
-    index+=1
+    #print(index)
+    #index+=1
     #if(index%5!=0):
     #    continue
     if (new == False):
@@ -62,7 +62,8 @@ while(cap.isOpened()):
     #output.paste(img_blend_raw)
     img_base_float = img_blend_float
     cv2.imshow('frame',img_blend)
-    key = cv2.waitKey(25) & 0xF
+
+    key = cv2.waitKey(25)&0xF
     if key==32:
         print('new')
         new = False
