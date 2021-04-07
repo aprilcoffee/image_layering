@@ -59,12 +59,12 @@ while(cap.isOpened()):
     img_queue.append(img_layer_float)
 
     if(len(img_queue)<10):
-        img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
+        img_blend_float = lighten_only(img_base_float,img_layer_float,1)
     else:
         img_queue.pop(0)
         img_temp_base_float = img_queue[0]
         for i in range(1,len(img_queue)):
-            img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],0.5)
+            img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],1)
             img_temp_base_float = img_temp_blend_float
             i+=3
         img_blend_float = img_temp_base_float

@@ -37,7 +37,7 @@ while(cap.isOpened()):
     print(index)
     index+=1
 
-    if(index%2==0):
+    if(index%5!=0):
         continue
     if (new == False):
         img_base = (Image.fromarray(frame)).resize((720,480),Image.ANTIALIAS)
@@ -57,7 +57,7 @@ while(cap.isOpened()):
     img_layer_float = img_layer.astype(np.float32)
     img_queue.append(img_layer_float)
 
-    if(len(img_queue)<100):
+    if(len(img_queue)<18):
         #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
         img_blend_float = np.maximum(img_base_float,img_layer_float)
     else:
