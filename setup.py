@@ -9,9 +9,7 @@ from setuptools import setup
 
 APP = ['main/version_cv2_speed/imageLayering.py']
 DATA_FILES = []
-OPTIONS = {
-    'iconfile':'image/icon.icns'
-}
+OPTIONS = {}
 
 setup(
     app=APP,

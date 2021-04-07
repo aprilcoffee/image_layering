@@ -218,8 +218,6 @@ def processImage():
         index +=1
         ret, frame=vidcap.read()
 
-        if(index%30==0):
-            gc.collect()
         #Ending last photo without blending
         if not ret and (len(img_queue) == 2):
             #last Image
@@ -317,6 +315,8 @@ def processImage():
             #canvas.create_image(200,100,image=output,anchor=NW)
 
 
+        if(index%2==0):
+            gc.collect()
         if exit_event.is_set():
             index = 0
             #output = Image.new("RGB",img_trans.size,(255,255,255,255))
