@@ -41,7 +41,7 @@ while(cap.isOpened()):
     if(index%2==0):
         continue
     if (new == False):
-        img_base = (Image.fromarray(frame)).resize((320,240),Image.ANTIALIAS)
+        img_base = (Image.fromarray(frame)).resize((720,480),Image.ANTIALIAS)
         img_base = numpy.uint8(img_base)
         img_base = cv2.cvtColor(img_base, cv2.COLOR_RGB2RGBA)
         img_base[:, :, 3] = 255
@@ -51,7 +51,7 @@ while(cap.isOpened()):
         #img_base_raw = Image.fromarray(img_base)
         new = True
         continue
-    img_layer = (Image.fromarray(frame)).resize((320,240),Image.ANTIALIAS)
+    img_layer = (Image.fromarray(frame)).resize((720,480),Image.ANTIALIAS)
     img_layer = numpy.uint8(img_layer)
     img_layer = cv2.cvtColor(img_layer, cv2.COLOR_RGB2RGBA)
     img_layer[:, :, 3] = 255
