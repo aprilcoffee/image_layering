@@ -7,10 +7,10 @@ Usage:
 
 from setuptools import setup
 
-APP = ['main/version_realtime/imageLayering.py']
+APP = ['main/version_cv2_speed/imageLayering.py']
 DATA_FILES = []
 OPTIONS = {
-    'iconfile':'image/icon_realtime.icns'
+    'iconfile':'image/icon.icns'
 }
 
 setup(
