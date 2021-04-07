@@ -170,14 +170,15 @@ def processImage():
     index = 0
     vidcap = cv2.VideoCapture(fileName)
     #success, image = vidcap.read()
-
+    '''
     if(startNum!=0 and startNum>=offset):
         for i in range(startNum-offset):
             ret, frame = vidcap.read()
         for i in range(offset):
             ret, frame = vidcap.read()
     else:
-        ret, frame = vidcap.read()
+    '''
+    ret, frame = vidcap.read()
 
     img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
     img_base[:, :, 3] = 255.
@@ -499,7 +500,7 @@ button_stop = Button(root,width=10,text="Stop",command=stopProgram)
 button_stop.place(x=8,y=580)
 
 
-
+'''
 restart_label = Label(root,text="中途計算(當機用) (選擇從第幾張開始)")
 restart_label.place(x=200,y=340)
 restart_num_input = Entry(root,width=10, textvariable=input_restart)
@@ -507,7 +508,7 @@ restart_num_input.insert(10,300)
 restart_num_input.place(x=200,y=360)
 button_restart = Button(root,width=10,text="restart",command=restartProgram)
 button_restart.place(x=200,y=520)
-
+'''
 
 #base_img_float = base_img.astype(float)
 root = mainloop()
