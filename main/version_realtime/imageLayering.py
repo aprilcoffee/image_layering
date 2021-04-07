@@ -62,10 +62,12 @@ while(cap.isOpened()):
     #output.paste(img_blend_raw)
     img_base_float = img_blend_float
     cv2.imshow('frame',img_blend)
-    key = cv2.waitKey(1) & 0xF
+    key = cv2.waitKey(25) & 0xF
     if key==32:
+        print('new')
         new = False
     if key==27 or key==ord('q'):
+        print('print')
         break
     done = True
 
