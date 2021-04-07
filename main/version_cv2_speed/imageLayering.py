@@ -159,6 +159,7 @@ def processImage():
     global img_size_opacity
     global dirName
     global outputName
+    global startNum
     img_queue = []
 
     uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
@@ -170,55 +171,59 @@ def processImage():
     index = 0
     vidcap = cv2.VideoCapture(fileName)
     #success, image = vidcap.read()
-    '''
+
     if(startNum!=0 and startNum>=offset):
-        for i in range(startNum-offset):
+        index = startNum-1
+        for i in range(startNum-offset-1):
             ret, frame = vidcap.read()
-        for i in range(offset):
+        for i in range(offset-1):
             ret, frame = vidcap.read()
+            if(not ret):
+                break
+            img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+            img_layer_restart[:, :, 3] = 255.
+            img_layer_restart_float = img_layer_restart.astype(np.float32)
+            #add to array
+            img_queue.append(img_layer_restart_float)
     else:
-    '''
-    ret, frame = vidcap.read()
+        ret, frame = vidcap.read()
+        img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img_base[:, :, 3] = 255.
+        img_base_float = img_base.astype(np.float32)
+        img_base = np.uint8(img_base_float)
+        img_base_raw = Image.fromarray(img_base)
+        img_size_opacity = np.full(img_base_raw.size, 0.5)
+        output = Image.new("RGB",img_base_raw.size,(255,255,255,255))
+        output.paste(img_base_raw)
+        count_label.configure(text="Image: "+str(index))
 
-    img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-    img_base[:, :, 3] = 255.
-    img_base_float = img_base.astype(np.float32)
-    img_base = np.uint8(img_base_float)
-    img_base_raw = Image.fromarray(img_base)
-    img_size_opacity = np.full(img_base_raw.size, 0.5)
+        img_queue.append(img_base_float)
+        #show image
+        #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
+        #canvas.create_image(200,100,image=img,anchor=NW)
 
+        if(quality_option=='Fast'):
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
+        elif(quality_option=='Default'):
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
+        elif(quality_option=='High'):
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
+        elif(quality_option=='Original'):
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
+        else:
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
 
-    print (img_size_opacity)
-    output = Image.new("RGB",img_base_raw.size,(255,255,255,255))
-    output.paste(img_base_raw)
-    count_label.configure(text="Image: "+str(index))
-
-    img_queue.append(img_base_float)
-    #show image
-    #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-    #canvas.create_image(200,100,image=img,anchor=NW)
-
-    if(quality_option=='Fast'):
-        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-    elif(quality_option=='Default'):
-        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-    elif(quality_option=='High'):
-        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-    elif(quality_option=='Original'):
-        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-    else:
-        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-
-    img_trans = Image.fromarray(img_base)
-    img_trans_float = img_base_float
 
     while True:
         print("processing image:"+str(index))
         index +=1
         ret, frame=vidcap.read()
 
+        if(index%30==0):
+            gc.collect()
         #Ending last photo without blending
         if not ret and (len(img_queue) == 2):
+            '''
             #last blending
             img_blend_float = lighten_only(img_queue[0],img_queue[1],0.5,True)
             img_blend = np.uint8(img_blend_float)
@@ -235,10 +240,10 @@ def processImage():
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
             else:
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-
+            '''
             #last Image
-            index += 1
-            img_blend_float = img_queue[1]
+            img_queue.pop(0)
+            img_blend_float = img_queue[0]
             img_blend = np.uint8(img_blend_float)
             img_blend_raw=Image.fromarray(img_blend)
             output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
@@ -253,6 +258,7 @@ def processImage():
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
             else:
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
+            count_label.configure(text="計算完成 總張數: "+str(index))
             break
 
         #Ending photos, poping queue
@@ -327,8 +333,6 @@ def processImage():
 
             #reset base
             img_base_float = img_blend_float
-            if(index%30==0):
-                gc.collect()
             #show Image
             #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
             #canvas.create_image(200,100,image=output,anchor=NW)
@@ -500,15 +504,18 @@ button_stop = Button(root,width=10,text="Stop",command=stopProgram)
 button_stop.place(x=8,y=580)
 
 
-'''
-restart_label = Label(root,text="中途計算(當機用) (選擇從第幾張開始)")
-restart_label.place(x=200,y=340)
+
+restart_label = Label(root,text="中途計算(當機用)")
+restart_label.place(x=200,y=500)
+restart_label2 = Label(root,text="選擇從第幾張開始: (數字請大於疊加層數)")
+restart_label2.place(x=200,y=520)
+
 restart_num_input = Entry(root,width=10, textvariable=input_restart)
-restart_num_input.insert(10,300)
-restart_num_input.place(x=200,y=360)
+restart_num_input.insert(10,1000)
+restart_num_input.place(x=200,y=540)
 button_restart = Button(root,width=10,text="restart",command=restartProgram)
-button_restart.place(x=200,y=520)
-'''
+button_restart.place(x=200,y=580)
+
 
 #base_img_float = base_img.astype(float)
 root = mainloop()
