@@ -21,7 +21,7 @@ def returnCameraIndexes():
         i -= 1
     return arr
 
-print(returnCameraIndexes())
+#print(returnCameraIndexes())
 
 new = False
 cap = cv2.VideoCapture(0)
@@ -39,7 +39,7 @@ while(cap.isOpened()):
     #if(index%5!=0):
     #    continue
     if (new == False):
-        img_base = (Image.fromarray(frame)).resize((1280,720),Image.ANTIALIAS)
+        img_base = (Image.fromarray(frame)).resize((1920,1080),Image.ANTIALIAS)
         img_base = np.uint8(img_base)
         img_base = cv2.cvtColor(img_base, cv2.COLOR_RGB2RGBA)
         img_base[:, :, 3] = 255
@@ -49,14 +49,14 @@ while(cap.isOpened()):
         #img_base_raw = Image.fromarray(img_base)
         new = True
         continue
-    img_layer = (Image.fromarray(frame)).resize((1280,720),Image.ANTIALIAS)
+    img_layer = (Image.fromarray(frame)).resize((1920,1080),Image.ANTIALIAS)
     img_layer = np.uint8(img_layer)
     img_layer = cv2.cvtColor(img_layer, cv2.COLOR_RGB2RGBA)
     img_layer[:, :, 3] = 255
     img_layer_float = img_layer.astype(np.float32)
     img_blend_float = np.maximum(img_base_float,img_layer_float)
     img_blend = np.uint8(img_blend_float)
-    img_blend_raw=Image.fromarray(img_blend).resize((1280,720),Image.ANTIALIAS)
+    img_blend_raw=Image.fromarray(img_blend).resize((1920,1080),Image.ANTIALIAS)
     img_blend = np.uint8(img_blend_raw)
     #output = Image.new("RGB",img_blend_raw.size,(255,255,255,255)
     #output.paste(img_blend_raw)
