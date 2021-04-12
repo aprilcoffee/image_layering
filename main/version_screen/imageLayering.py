@@ -1,0 +1,75 @@
+import cv2
+import glob, os
+import numpy as np
+from blend_modes import normal
+from blend_modes import lighten_only
+import cv2
+from PIL import Image, ImageTk
+import time,sys
+import pyautogui
+
+def returnCameraIndexes():
+    # checks the first 10 indexes.
+    index = 0
+    arr = []
+    i = 10
+    while i > 0:
+        cap = cv2.VideoCapture(index)
+        if cap.read()[0]:
+            arr.append(index)
+            cap.release()
+        index += 1
+        i -= 1
+    return arr
+
+#print(returnCameraIndexes())
+Screensize = (1920,1080)
+
+new = False
+#cap = cv2.VideoCapture(1)
+#cap.set(cv2.CV_CAP_PROP_FPS,30)
+#while True:
+#ret = cap.set(0,720)
+
+img_queue = []
+index = 0
+
+while(True):
+    #ret,frame = cap.read()
+    #print(index)
+    #index+=1
+    #if(index%5!=0):
+    #    continue
+    frame = np.array(pyautogui.screenshot(region=(0,100,1280,700)))
+    if (new == False):
+        img_base = cv2.cvtColor(frame, cv2.COLOR_RGB2RGBA)
+        img_base[:, :, 3] = 255
+        img_base_float = img_base.astype(np.float32)
+        #img_queue.append(img_base_float)
+        #img_base = numpy.uint8(img_base_float)
+        #img_base_raw = Image.fromarray(img_base)
+        new = True
+        continue
+    img_layer = cv2.cvtColor(frame, cv2.COLOR_RGB2RGBA)
+    img_layer[:, :, 3] = 255
+    img_layer_float = img_layer.astype(np.float32)
+    img_blend_float = np.maximum(img_base_float,img_layer_float)
+    img_blend = np.uint8(img_blend_float)
+    img_blend_raw=Image.fromarray(img_blend).resize((1280,800),Image.ANTIALIAS)
+    img_blend = np.uint8(img_blend_raw)
+    #output = Image.new("RGB",img_blend_raw.size,(255,255,255,255)
+    #output.paste(img_blend_raw)
+    img_base_float = img_blend_float
+
+    key = cv2.waitKey()
+    print(key)
+    if key==32:
+        new = False
+    if key==27 or key==ord('q'):
+        break
+    done = True
+    cv2.imshow('frame',img_blend)
+
+
+cap.release()
+cv2.destroyAllWindows()
