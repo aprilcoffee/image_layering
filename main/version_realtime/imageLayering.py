@@ -32,7 +32,6 @@ cap = cv2.VideoCapture(1)
 img_queue = []
 index = 0
 
-time.sleep(4)
 while(cap.isOpened()):
     ret,frame = cap.read()
     #print(index)
