@@ -30,7 +30,6 @@ cap = cv2.VideoCapture(1)
 #ret = cap.set(0,720)
 index = 0
 
-time.sleep(4)
 while(cap.isOpened()):
     ret,frame = cap.read()
     #print(index)
