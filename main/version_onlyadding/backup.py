@@ -189,11 +189,12 @@ def processImage():
         ret, frame = vidcap.read()
         img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         #img_base[:, :, 3] = 255.
-        img_base_float = np.float32(img_base)
-        img_base = np.uint8(img_base_float)
-        img_base_raw = Image.fromarray(img_base)
-        output = Image.new("RGB",img_base_raw.size,(255,255,255,255))
-        output.paste(img_base_raw)
+        #img_base_float = img_base.astype(np.float32)
+        #img_base = np.uint8(img_base_float)
+        #img_base_raw = Image.fromarray(img_base)
+        #img_size_opacity = np.full(img_base_raw.size, 0.5)
+        output = Image.new("RGB",img_base_raw.size,(255,255,255))
+        output.paste(img_base)
         count_label.configure(text="Image: "+str(index))
 
         img_queue.append(img_base)
@@ -218,15 +219,17 @@ def processImage():
         index +=1
         ret, frame=vidcap.read()
 
+        if(index%30==0):
+            gc.collect()
         #Ending last photo without blending
         if not ret and (len(img_queue) == 2):
             #last Image
             img_queue.pop(0)
-            img_blend_float = img_queue[0]
-            img_blend = np.uint8(img_blend_float)
-            img_blend_raw=Image.fromarray(img_blend)
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
-            output.paste(img_blend_raw)
+            img_blend = img_queue[0]
+            #img_blend = np.uint8(img_blend_float)
+            #img_blend_raw=Image.fromarray(img_blend)
+            output = Image.new("RGB",img_blend.size,(255,255,255))
+            output.paste(img_blend)
             if(quality_option=='Fast'):
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
             elif(quality_option=='Default'):
@@ -248,12 +251,12 @@ def processImage():
             #    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],1)
             #    img_temp_base_float = img_temp_blend_float
             #img_blend_float = img_temp_base_float
-            img_blend_float = np.maximum.reduce(img_queue)
-            img_blend = np.uint8(img_blend_float)
-            img_blend_raw = Image.fromarray(img_blend)
+            img_blend = np.maximum.reduce(img_queue)
+            #img_blend = np.uint8(img_blend_float)
+            img_blend_raw=Image.fromarray(img_blend)
             #counter
             count_label.configure(text="Ending Image: "+str(index))
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+            output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
             if(quality_option=='Fast'):
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
@@ -271,31 +274,33 @@ def processImage():
         else:
             img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
             #img_layer[:, :, 3] = 255.
-            img_layer_float = np.float32(img_layer)
-            img_queue.append(img_layer_float)
+            #img_layer_float = img_layer.astype(np.float32)
+
+            #add to array
+            img_queue.append(img_layer)
 
             if(index < offset):
                 #np.maximum
-                img_blend_float = np.maximum(img_base,img_layer)
+                img_blend = np.maximum(img_base,img_layer)
                 #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
             else:
                 img_queue.pop(0)
                 #img_temp_base = []
                 #for i in range(0,len(img_queue)):
                 #    img_temp_base.append(img_queue[i])
-                img_blend_float = np.maximum.reduce(img_queue)
+                img_blend = np.maximum.reduce(img_queue)
                 #img_temp_base_float = img_queue[0]
                 #for i in range(1,len(img_queue)):
                 #    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],0.5)
                 #    img_temp_base_float = img_temp_blend_float
                 #img_blend_float = img_temp_base_float
 
-            img_blend = np.uint8(img_blend_float)
+            #img_blend = np.uint8(img_blend_float)
             img_blend_raw=Image.fromarray(img_blend)
 
             #counter
             count_label.configure(text="Image: "+str(index))
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+            output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
             if(quality_option=='Fast'):
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
@@ -309,15 +314,12 @@ def processImage():
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
 
             #reset base
-            img_base_float = img_blend_float
+            img_base = img_blend
             #show Image
             #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
             #canvas.create_image(200,100,image=output,anchor=NW)
 
 
-            if(index%2==0):
-                print('hi')
-                gc.collect()
         if exit_event.is_set():
             index = 0
             #output = Image.new("RGB",img_trans.size,(255,255,255,255))
@@ -445,13 +447,13 @@ dirName_label.place(x=8,y=170)
 outputName_label = Label(root,text="輸出資料夾名稱")
 outputName_label.place(x=8,y=220)
 outputName_input = Entry(root,width=20, textvariable=input_outputName)
-outputName_input.insert(20,'images')
+outputName_input.insert(20,'processedImage')
 outputName_input.place(x=8,y=240)
 
 offset_label = Label(root,text="疊加層數")
 offset_label.place(x=8,y=340)
 offset_input = Entry(root,width=10, textvariable=input_offset)
-offset_input.insert(10,150)
+offset_input.insert(10,60)
 offset_input.place(x=10,y=360)
 
 #transparent_label = Label(root,text="漸層程度 (0.00 ~ 1.00)")

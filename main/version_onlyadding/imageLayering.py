@@ -219,9 +219,10 @@ def processImage():
         ret, frame=vidcap.read()
 
         #Ending last photo without blending
-        if not ret and (len(img_queue) == 2):
+        if not ret and (len(img_queue) <= 2):
             #last Image
-            img_queue.pop(0)
+            if (len(img_queue)>1):
+                img_queue.pop(0)
             img_blend_float = img_queue[0]
             img_blend = np.uint8(img_blend_float)
             img_blend_raw=Image.fromarray(img_blend)
@@ -272,9 +273,10 @@ def processImage():
             img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
             #img_layer[:, :, 3] = 255.
             img_layer_float = np.float32(img_layer)
-            img_queue.append(img_layer_float)
+            if(offset!=-1):
+                img_queue.append(img_layer_float)
 
-            if(index < offset):
+            if(index < offset or offset == -1):
                 #np.maximum
                 img_blend_float = np.maximum(img_base,img_layer)
                 #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
@@ -316,7 +318,6 @@ def processImage():
 
 
             if(index%2==0):
-                print('hi')
                 gc.collect()
         if exit_event.is_set():
             index = 0
