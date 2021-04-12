@@ -5,7 +5,7 @@ from blend_modes import normal
 from blend_modes import lighten_only
 import cv2
 from PIL import Image, ImageTk
-
+import time,sys
 
 def returnCameraIndexes():
     # checks the first 10 indexes.
@@ -21,10 +21,10 @@ def returnCameraIndexes():
         i -= 1
     return arr
 
-#print(returnCameraIndexes())
+print(returnCameraIndexes())
 
 new = False
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 #cap.set(cv2.CV_CAP_PROP_FPS,30)
 #while True:
 #ret = cap.set(0,720)
@@ -32,6 +32,7 @@ cap = cv2.VideoCapture(0)
 img_queue = []
 index = 0
 
+time.sleep(4)
 while(cap.isOpened()):
     ret,frame = cap.read()
     #print(index)
