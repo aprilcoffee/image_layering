@@ -196,7 +196,7 @@ def processImage():
         output.paste(img_base_raw)
         count_label.configure(text="Image: "+str(index))
 
-        img_queue.append(img_base)
+        img_queue.append(img_base_float)
         #show image
         #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
         #canvas.create_image(200,100,image=img,anchor=NW)
@@ -278,7 +278,7 @@ def processImage():
 
             if(index < offset or offset == -1):
                 #np.maximum
-                img_blend_float = np.maximum(img_base,img_layer)
+                img_blend_float = np.maximum(img_base_float,img_layer_float)
                 #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
             else:
                 img_queue.pop(0)
