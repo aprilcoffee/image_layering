@@ -180,8 +180,10 @@ def processImage():
         index = startNum-1
         for i in range(startNum-offset):
             ret, frame = vidcap.read()
+            #print('hi')
         for i in range(offset):
             ret, frame = vidcap.read()
+            #print('hi')
             if(not ret):
                 break
             img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -189,6 +191,7 @@ def processImage():
             #img_layer_restart_float = img_layer_restart.astype(np.float32)
             #add to array
             img_queue.append(img_layer_restart)
+        img_base = img_layer_restart
     else:
         ret, frame = vidcap.read()
         img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -208,17 +211,21 @@ def processImage():
         if(quality_option=='Fast'):
             #print('Fast')
             output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-        elif(quality_option=='Default'):
+        elif(quality_option=='Default_JPG'):
             #print('Default')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
+        elif(quality_option=='Default_PNG'):
+            #print('Default')
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
         elif(quality_option=='Original_JPG'):
             #print('High')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
         elif(quality_option=='Original_PNG'):
             #print('Original')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
         else:
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
+
     while True:
         print("processing image:"+str(index))
         index +=1
@@ -235,20 +242,24 @@ def processImage():
             img_blend_raw=Image.fromarray(img_blend)
             output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
+
             if(quality_option=='Fast'):
                 #print('Fast')
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
+            elif(quality_option=='Default_JPG'):
                 #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Default_PNG'):
+                #print('Default')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
             elif(quality_option=='Original_JPG'):
                 #print('High')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
             elif(quality_option=='Original_PNG'):
                 #print('Original')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
             else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
             count_label.configure(text="計算完成 總張數: "+str(index))
             break
 
@@ -267,20 +278,24 @@ def processImage():
             count_label.configure(text="Ending Image: "+str(index))
             output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
+
             if(quality_option=='Fast'):
                 #print('Fast')
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
+            elif(quality_option=='Default_JPG'):
                 #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Default_PNG'):
+                #print('Default')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
             elif(quality_option=='Original_JPG'):
                 #print('High')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
             elif(quality_option=='Original_PNG'):
                 #print('Original')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
             else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
 
         #normal execution
         else:
@@ -322,17 +337,20 @@ def processImage():
             if(quality_option=='Fast'):
                 #print('Fast')
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
+            elif(quality_option=='Default_JPG'):
                 #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Default_PNG'):
+                #print('Default')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
             elif(quality_option=='Original_JPG'):
                 #print('High')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
             elif(quality_option=='Original_PNG'):
                 #print('Original')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
             else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
 
             #reset base
             img_base = img_blend
@@ -403,12 +421,13 @@ offset_input.place(x=10,y=360)
 
 quality_label = Label(root,text="輸出品質")
 quality_label.place(x=8,y=400)
-quality_label_selection = Label(root,text="Fast:快速壓縮  Default:無壓縮60dpi  Original:無壓縮300dpi")
+quality_label_selection = Label(root,text="Fast:快速壓縮  Default:無壓縮72dpi  Original:無壓縮150dpi")
 quality_label_selection.place(x=8,y=420)
 
 quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
 quality_input['values'] = ('Fast',
-                          'Default',
+                          'Default_JPG',
+                          'Default_PNG'
                           'Original_JPG',
                           'Original_PNG',
                           )
