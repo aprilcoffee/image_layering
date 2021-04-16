@@ -155,6 +155,26 @@ def stopProgram():
 def savingPhoto():
     print('saved')
 
+def exporting(output,quality_option,dirName,outputName,index):
+    if(quality_option=='Fast'):
+        #print('Fast')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
+    elif(quality_option=='Default_JPG'):
+        #print('Default')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
+    elif(quality_option=='Default_PNG'):
+        #print('Default')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[72,72])
+    elif(quality_option=='Original_JPG'):
+        #print('High')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
+    elif(quality_option=='Original_PNG'):
+        #print('Original')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
+    else:
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
+
+
 def processImage():
     global fileName
     global exit_event
@@ -165,6 +185,7 @@ def processImage():
     global startNum
     global quality_option
     img_queue = []
+    restart_bug = False;
 
     uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
     if(dirName == 'Null'):
@@ -177,6 +198,7 @@ def processImage():
     #success, image = vidcap.read()
 
     if(startNum!=0 and startNum>=offset):
+        restart_bug = True
         index = startNum-1
         for i in range(startNum-offset):
             ret, frame = vidcap.read()
@@ -187,11 +209,12 @@ def processImage():
             if(not ret):
                 break
             img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             #img_layer_restart[:, :, 3] = 255.
             #img_layer_restart_float = img_layer_restart.astype(np.float32)
             #add to array
-            img_queue.append(img_layer_restart)
-        img_base = img_layer_restart
+            if(offset!=-1):
+                img_queue.append(img_layer_restart)
     else:
         ret, frame = vidcap.read()
         img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -202,29 +225,10 @@ def processImage():
         output = Image.new("RGB",img_base_raw.size)
         output.paste(img_base_raw)
         count_label.configure(text="Image: "+str(index))
-
         img_queue.append(img_base)
         #show image
         #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
         #canvas.create_image(200,100,image=img,anchor=NW)
-
-        if(quality_option=='Fast'):
-            #print('Fast')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-        elif(quality_option=='Default_JPG'):
-            #print('Default')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-        elif(quality_option=='Default_PNG'):
-            #print('Default')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-        elif(quality_option=='Original_JPG'):
-            #print('High')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
-        elif(quality_option=='Original_PNG'):
-            #print('Original')
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
-        else:
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
 
     while True:
         print("processing image:"+str(index))
@@ -242,24 +246,7 @@ def processImage():
             img_blend_raw=Image.fromarray(img_blend)
             output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
-
-            if(quality_option=='Fast'):
-                #print('Fast')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default_JPG'):
-                #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Default_PNG'):
-                #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Original_JPG'):
-                #print('High')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Original_PNG'):
-                #print('Original')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
-            else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
+            exporting(output,quality_option,dirName,outputName,index)
             count_label.configure(text="計算完成 總張數: "+str(index))
             break
 
@@ -278,25 +265,7 @@ def processImage():
             count_label.configure(text="Ending Image: "+str(index))
             output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
-
-            if(quality_option=='Fast'):
-                #print('Fast')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default_JPG'):
-                #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Default_PNG'):
-                #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Original_JPG'):
-                #print('High')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Original_PNG'):
-                #print('Original')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
-            else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
-
+            exporting(output,quality_option,dirName,outputName,index)
         #normal execution
         else:
             img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -333,25 +302,7 @@ def processImage():
             output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
             #output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[50,50])
-
-            if(quality_option=='Fast'):
-                #print('Fast')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default_JPG'):
-                #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Default_PNG'):
-                #print('Default')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Original_JPG'):
-                #print('High')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
-            elif(quality_option=='Original_PNG'):
-                #print('Original')
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
-            else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
-
+            exporting(output,quality_option,dirName,outputName,index)
             #reset base
             img_base = img_blend
             #show Image
@@ -427,7 +378,7 @@ quality_label_selection.place(x=8,y=420)
 quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
 quality_input['values'] = ('Fast',
                           'Default_JPG',
-                          'Default_PNG'
+                          'Default_PNG',
                           'Original_JPG',
                           'Original_PNG',
                           )
