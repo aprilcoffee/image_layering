@@ -185,7 +185,7 @@ def processImage():
     global startNum
     global quality_option
     img_queue = []
-    restart_bug = False;
+    restarting = True;
 
     uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
     if(dirName == 'Null'):
@@ -197,25 +197,26 @@ def processImage():
     vidcap = cv2.VideoCapture(fileName)
     #success, image = vidcap.read()
 
-    if(startNum!=0 and startNum>=offset):
-        restart_bug = True
-        index = startNum-1
-        for i in range(startNum-offset):
-            ret, frame = vidcap.read()
-            #print('hi')
-        for i in range(offset):
-            ret, frame = vidcap.read()
-            #print('hi')
-            if(not ret):
-                break
-            img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            #img_layer_restart[:, :, 3] = 255.
-            #img_layer_restart_float = img_layer_restart.astype(np.float32)
-            #add to array
-            if(offset!=-1):
-                img_queue.append(img_layer_restart)
-    else:
+    if(startNum!=0 and startNum>=offset and offset!=-1):
+        if(offset!=-1):
+            restarting = True
+            index = startNum-1
+            for i in range(startNum-offset):
+                ret, frame = vidcap.read()
+                #print('hi')
+            for i in range(offset):
+                ret, frame = vidcap.read()
+                #print('hi')
+                if(not ret):
+                    break
+                img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                #img_layer_restart[:, :, 3] = 255.
+                #img_layer_restart_float = img_layer_restart.astype(np.float32)
+                #add to array
+                if(offset!=-1):
+                    img_queue.append(img_layer_restart)
+    elif(startNum==0 or offset==-1):
         ret, frame = vidcap.read()
         img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         #img_base[:, :, 3] = 255.
@@ -271,7 +272,8 @@ def processImage():
             img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             #img_layer[:, :, 3] = 255.
             #img_layer_float = np.float32(img_layer)
-            img_queue.append(img_layer)
+            if(offset!=-1):
+                img_queue.append(img_layer)
 
             if(index < offset or offset==-1):
                 #np.maximum
@@ -297,12 +299,11 @@ def processImage():
 
             #cv2.imwrite(dirName+'/'+outputName+'_png/'+'frame'+str(index)+'.png', img_blend, [cv2.IMWRITE_PNG_COMPRESSION, 0])
             #cv2.imwrite(dirName+'/'+outputName+'_jpg/'+'frame'+str(index)+'.jpg', img_blend, [cv2.IMWRITE_JPEG_QUALITY, 100])
-
-            img_blend_raw=Image.fromarray(img_blend)
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255))
-            output.paste(img_blend_raw)
-            #output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[50,50])
-            exporting(output,quality_option,dirName,outputName,index)
+            if(index>=startNum):
+                img_blend_raw=Image.fromarray(img_blend)
+                output = Image.new("RGB",img_blend_raw.size,(255,255,255))
+                output.paste(img_blend_raw)
+                exporting(output,quality_option,dirName,outputName,index)
             #reset base
             img_base = img_blend
             #show Image
