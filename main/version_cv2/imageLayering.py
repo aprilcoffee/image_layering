@@ -13,6 +13,8 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import threading
 
+import time
+
 exit_event = threading.Event()
 
 fileName = 'Null'
@@ -101,11 +103,11 @@ def browseDirectory():
     dirName = filedialog.askdirectory(title="select Directory")
     dirName_label.configure(text=dirName)
 
-
 def startProgram():
     global offset
     global outputName
     global startNum
+    global quality_option
     #global transparency
 
     startNum = 0
@@ -128,6 +130,7 @@ def restartProgram():
     global offset
     global outputName
     global startNum
+    global quality_option
     #global transparency
 
     startNum = int(input_restart.get())
@@ -160,6 +163,7 @@ def processImage():
     global dirName
     global outputName
     global startNum
+    global quality_option
     img_queue = []
 
     uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
@@ -180,19 +184,19 @@ def processImage():
             ret, frame = vidcap.read()
             if(not ret):
                 break
-            img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+            img_layer_restart = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             #img_layer_restart[:, :, 3] = 255.
             #img_layer_restart_float = img_layer_restart.astype(np.float32)
             #add to array
             img_queue.append(img_layer_restart)
     else:
         ret, frame = vidcap.read()
-        img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         #img_base[:, :, 3] = 255.
-        img_base_float = np.float32(img_base)
-        img_base = np.uint8(img_base_float)
+        #img_base_float = np.float32(img_base)
+        #img_base = np.uint8(img_base_float)
         img_base_raw = Image.fromarray(img_base)
-        output = Image.new("RGB",img_base_raw.size,(255,255,255,255))
+        output = Image.new("RGB",img_base_raw.size)
         output.paste(img_base_raw)
         count_label.configure(text="Image: "+str(index))
 
@@ -202,41 +206,49 @@ def processImage():
         #canvas.create_image(200,100,image=img,anchor=NW)
 
         if(quality_option=='Fast'):
+            #print('Fast')
             output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
         elif(quality_option=='Default'):
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-        elif(quality_option=='High'):
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-        elif(quality_option=='Original'):
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
+            #print('Default')
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+        elif(quality_option=='Original_JPG'):
+            #print('High')
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+        elif(quality_option=='Original_PNG'):
+            #print('Original')
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
         else:
-            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-
-
+            output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
     while True:
         print("processing image:"+str(index))
         index +=1
         ret, frame=vidcap.read()
-
+        if(index%2==0):
+            gc.collect()
         #Ending last photo without blending
-        if not ret and (len(img_queue) == 2):
+        if not ret and (len(img_queue) <= 2):
             #last Image
-            img_queue.pop(0)
-            img_blend_float = img_queue[0]
-            img_blend = np.uint8(img_blend_float)
+            if(len(img_queue)>1):
+                img_queue.pop(0)
+            img_blend = img_queue[0]
+            #img_blend = np.uint8(img_blend_float)
             img_blend_raw=Image.fromarray(img_blend)
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+            output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
             if(quality_option=='Fast'):
+                #print('Fast')
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
             elif(quality_option=='Default'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
+                #print('Default')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Original_JPG'):
+                #print('High')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Original_PNG'):
+                #print('Original')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
             else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
             count_label.configure(text="計算完成 總張數: "+str(index))
             break
 
@@ -248,76 +260,87 @@ def processImage():
             #    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],1)
             #    img_temp_base_float = img_temp_blend_float
             #img_blend_float = img_temp_base_float
-            img_blend_float = np.maximum.reduce(img_queue)
-            img_blend = np.uint8(img_blend_float)
+            img_blend = np.maximum.reduce(img_queue)
+            #img_blend = np.uint8(img_blend_float)
             img_blend_raw = Image.fromarray(img_blend)
             #counter
             count_label.configure(text="Ending Image: "+str(index))
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+            output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
             if(quality_option=='Fast'):
+                #print('Fast')
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
             elif(quality_option=='Default'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
+                #print('Default')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Original_JPG'):
+                #print('High')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Original_PNG'):
+                #print('Original')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
             else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
 
         #normal execution
         else:
-            img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+            img_layer = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             #img_layer[:, :, 3] = 255.
-            img_layer_float = np.float32(img_layer)
-            img_queue.append(img_layer_float)
+            #img_layer_float = np.float32(img_layer)
+            img_queue.append(img_layer)
 
-            if(index < offset):
+            if(index < offset or offset==-1):
                 #np.maximum
-                img_blend_float = np.maximum(img_base,img_layer)
+                img_blend = np.maximum(img_base,img_layer)
                 #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
             else:
+                #start = time.process_time()
                 img_queue.pop(0)
                 #img_temp_base = []
                 #for i in range(0,len(img_queue)):
                 #    img_temp_base.append(img_queue[i])
-                img_blend_float = np.maximum.reduce(img_queue)
+                img_blend = np.maximum.reduce(img_queue)
                 #img_temp_base_float = img_queue[0]
                 #for i in range(1,len(img_queue)):
                 #    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],0.5)
                 #    img_temp_base_float = img_temp_blend_float
                 #img_blend_float = img_temp_base_float
-
-            img_blend = np.uint8(img_blend_float)
-            img_blend_raw=Image.fromarray(img_blend)
+                #end = time.process_time()
+                #print('obo\t'+str(end-start))
 
             #counter
             count_label.configure(text="Image: "+str(index))
-            output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
+
+            #cv2.imwrite(dirName+'/'+outputName+'_png/'+'frame'+str(index)+'.png', img_blend, [cv2.IMWRITE_PNG_COMPRESSION, 0])
+            #cv2.imwrite(dirName+'/'+outputName+'_jpg/'+'frame'+str(index)+'.jpg', img_blend, [cv2.IMWRITE_JPEG_QUALITY, 100])
+
+            img_blend_raw=Image.fromarray(img_blend)
+            output = Image.new("RGB",img_blend_raw.size,(255,255,255))
             output.paste(img_blend_raw)
+            #output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[50,50])
+
             if(quality_option=='Fast'):
+                #print('Fast')
                 output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
             elif(quality_option=='Default'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
+                #print('Default')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[60,60],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Original_JPG'):
+                #print('High')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300],quality='web_maximum',subsampling=0)
+            elif(quality_option=='Original_PNG'):
+                #print('Original')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[300,300])
             else:
-                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg')
+                output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[300,300])
 
             #reset base
-            img_base_float = img_blend_float
+            img_base = img_blend
             #show Image
             #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
             #canvas.create_image(200,100,image=output,anchor=NW)
 
 
-            if(index%2==0):
-                print('hi')
-                gc.collect()
         if exit_event.is_set():
             index = 0
             #output = Image.new("RGB",img_trans.size,(255,255,255,255))
@@ -327,95 +350,13 @@ def processImage():
             count_label.configure(text="Image: "+str(index))
             exit_event.clear()
             break
-
-    '''
-    base_img_raw = Image.fromarray(frame)
-    base_img_raw.putalpha(255)
-    base_img = numpy.array(base_img_raw)
-    base_img_float = base_img.astype(float)
-
-    transparent_img_raw = base_img_raw
-    transparent_img = base_img
-    transparent_img_float = base_img_float
-
-
-    base_img = numpy.uint8(base_img_float)
-    base_img = cv2.cvtColor(base_img, cv2.COLOR_BGR2RGB)
-    base_img_raw=Image.fromarray(base_img)
-    output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
-    output.paste(base_img_raw)
-    img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-    canvas.create_image(200,100,image=img,anchor=NW)
-    count_label.configure(text="Image: "+str(index))
-
-    if(quality_option=='Fast'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-    elif(quality_option=='Default'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-    elif(quality_option=='High'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-    elif(quality_option=='Original'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-    else:
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-
-    while True:
-        index +=1
-
-        print("processing image:"+str(index))
-        ret, frame=vidcap.read()
-        if not ret:
-            break
-
-        layer_img_raw = Image.fromarray(frame)
-        layer_img_raw.putalpha(255)
-        layer_img = numpy.array(layer_img_raw)
-        layer_img_float = layer_img.astype(float)
-
-        blend_img_float = lighten_only(base_img_float,layer_img_float,0.5)
-        if(index >= offset):
-            blend_img_float = normal(blend_img_float,transparent_img_float,transparency)
-
-        blend_img = numpy.uint8(blend_img_float)
-        blend_img = cv2.cvtColor(blend_img, cv2.COLOR_BGR2RGB)
-        blend_img_raw=Image.fromarray(blend_img)
-
-        output = Image.new("RGB",blend_img_raw.size,(255,255,255,255))
-        output.paste(blend_img_raw)
-        if(quality_option=='Fast'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-        elif(quality_option=='Default'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-        elif(quality_option=='High'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-        elif(quality_option=='Original'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-        else:
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-        base_img_float = blend_img_float
-        img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-        canvas.create_image(200,100,image=img,anchor=NW)
-        count_label.configure(text="Image: "+str(index))
-
-        if exit_event.is_set():
-            index = 0
-            output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
-            output.paste(base_img_raw)
-            img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-            canvas.create_image(200,100,image=img,anchor=NW)
-            count_label.configure(text="Image: "+str(index))
-            exit_event.clear()
-            break
-    '''
     done = True
 
 
 root = Tk()
 root.title('image layering')
 
-canvas = Canvas(root,width=500,height=700)
+canvas = Canvas(root,width=500,height=800)
 canvas.pack()
 
 
@@ -448,7 +389,7 @@ outputName_input = Entry(root,width=20, textvariable=input_outputName)
 outputName_input.insert(20,'images')
 outputName_input.place(x=8,y=240)
 
-offset_label = Label(root,text="疊加層數")
+offset_label = Label(root,text="疊加層數 (輸入-1 不做fadeout)")
 offset_label.place(x=8,y=340)
 offset_input = Entry(root,width=10, textvariable=input_offset)
 offset_input.insert(10,150)
@@ -462,14 +403,14 @@ offset_input.place(x=10,y=360)
 
 quality_label = Label(root,text="輸出品質")
 quality_label.place(x=8,y=400)
-quality_label_selection = Label(root,text="F:快速 D:一般 H:高解析 O:原檔")
+quality_label_selection = Label(root,text="Fast:快速壓縮  Default:無壓縮60dpi  Original:無壓縮300dpi")
 quality_label_selection.place(x=8,y=420)
 
 quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
 quality_input['values'] = ('Fast',
                           'Default',
-                          'High',
-                          'Original',
+                          'Original_JPG',
+                          'Original_PNG',
                           )
 quality_input.place(x=8,y=440)
 quality_input.current(0)
@@ -484,17 +425,16 @@ button_stop = Button(root,width=10,text="Stop",command=stopProgram)
 button_stop.place(x=8,y=580)
 
 
-
 restart_label = Label(root,text="中途計算(當機用)")
-restart_label.place(x=200,y=500)
+restart_label.place(x=8,y=640)
 restart_label2 = Label(root,text="選擇從第幾張開始: (數字請大於疊加層數)")
-restart_label2.place(x=200,y=520)
+restart_label2.place(x=8,y=660)
 
 restart_num_input = Entry(root,width=10, textvariable=input_restart)
 restart_num_input.insert(10,1000)
-restart_num_input.place(x=200,y=540)
+restart_num_input.place(x=8,y=680)
 button_restart = Button(root,width=10,text="restart",command=restartProgram)
-button_restart.place(x=200,y=580)
+button_restart.place(x=8,y=720)
 
 
 #base_img_float = base_img.astype(float)
