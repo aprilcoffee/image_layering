@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['main/version_cv2/imageLayering.py']
+APP = ['imageLayering.py']
 DATA_FILES = []
 OPTIONS = {}
 
@@ -15,5 +15,5 @@ setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
-    setup_requires=['py2app','opencv-python','blend_modes','pillow'],
+    setup_requires=['py2app','opencv-python','pillow'],
 )
