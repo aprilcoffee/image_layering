@@ -15,6 +15,7 @@ from blend_modes import grain_extract
 from blend_modes import grain_merge
 from blend_modes import divide
 from blend_modes import overlay
+from blend_modes import screen
 from blend_modes import normal
 
 from tkinter import *
@@ -157,6 +158,8 @@ def processImage():
                 img_blend_float = divide(img_base_float,img_layer_float,transparency)
             elif(blendmode=='overlay'):
                 img_blend_float = overlay(img_base_float,img_layer_float,transparency)
+            elif(blendmode=='screen'):
+                img_blend_float = screen(img_base_float,img_layer_float,transparency)
             elif(blendmode=='normal'):
                 img_blend_float = normal(img_base_float,img_layer_float,transparency)
             else:
@@ -203,87 +206,7 @@ def processImage():
             exit_event.clear()
             break
 
-    '''
-    base_img_raw = Image.fromarray(frame)
-    base_img_raw.putalpha(255)
-    base_img = numpy.array(base_img_raw)
-    base_img_float = base_img.astype(float)
 
-    transparent_img_raw = base_img_raw
-    transparent_img = base_img
-    transparent_img_float = base_img_float
-
-
-    base_img = numpy.uint8(base_img_float)
-    base_img = cv2.cvtColor(base_img, cv2.COLOR_BGR2RGB)
-    base_img_raw=Image.fromarray(base_img)
-    output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
-    output.paste(base_img_raw)
-    img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-    canvas.create_image(200,100,image=img,anchor=NW)
-    count_label.configure(text="Image: "+str(index))
-
-    if(quality_option=='Fast'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-    elif(quality_option=='Default'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-    elif(quality_option=='High'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-    elif(quality_option=='Original'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-    else:
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-
-    while True:
-        index +=1
-
-        print("processing image:"+str(index))
-        ret, frame=vidcap.read()
-        if not ret:
-            break
-
-        layer_img_raw = Image.fromarray(frame)
-        layer_img_raw.putalpha(255)
-        layer_img = numpy.array(layer_img_raw)
-        layer_img_float = layer_img.astype(float)
-
-        blend_img_float = lighten_only(base_img_float,layer_img_float,0.5)
-        if(index >= offset):
-            blend_img_float = normal(blend_img_float,transparent_img_float,transparency)
-
-        blend_img = numpy.uint8(blend_img_float)
-        blend_img = cv2.cvtColor(blend_img, cv2.COLOR_BGR2RGB)
-        blend_img_raw=Image.fromarray(blend_img)
-
-        output = Image.new("RGB",blend_img_raw.size,(255,255,255,255))
-        output.paste(blend_img_raw)
-        if(quality_option=='Fast'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-        elif(quality_option=='Default'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-        elif(quality_option=='High'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-        elif(quality_option=='Original'):
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-        else:
-            output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-
-        base_img_float = blend_img_float
-        img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-        canvas.create_image(200,100,image=img,anchor=NW)
-        count_label.configure(text="Image: "+str(index))
-
-        if exit_event.is_set():
-            index = 0
-            output = Image.new("RGB",base_img_raw.size,(255,255,255,255))
-            output.paste(base_img_raw)
-            img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
-            canvas.create_image(200,100,image=img,anchor=NW)
-            count_label.configure(text="Image: "+str(index))
-            exit_event.clear()
-            break
-    '''
     done = True
 
 
@@ -332,6 +255,7 @@ mode_input['values'] = ('soft_light',
                           'grain_merge',
                           'divide',
                           'overlay',
+                          'screen',
                           'normal',
                           )
 mode_input.place(x=8,y=140)
