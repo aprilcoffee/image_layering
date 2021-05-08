@@ -42,17 +42,25 @@ def browseFiles():
     global fileName
     #fileName = filedialog.askopenfilename(initialdir="/",title="select movie file",filetypes=[("ALL FILES","*.*"),("video file","*.py"),])
     fileName = filedialog.askopenfilename(title="select movie file")
-    fileName_label.configure(text="File Opened: "+fileName)
+    fileName_label.configure(text=fileName)
+
+def browseDirectory():
+    global dirName
+    dirName = filedialog.askdirectory(title="select Directory")
+    dirName_label.configure(text=dirName)
 
 def startProgram():
     global offset
     global transparency
     global blendmode
+    global outputName
     global quality_option
     #offset = int(input_offset.get())
     transparency = float(input_transparent.get())
     quality_option = str(input_quality.get())
     blendmode = str(input_mode.get())
+    outputName = str(input_outputName.get())
+
 
     if(fileName!='Null'):
         #button_explore.place_forget()
@@ -93,14 +101,20 @@ def processImage():
     global fileName
     global exit_event
     global done
+    global img_size_opacity
+    global dirName
+    global outputName
+    global startNum
     global quality_option
+    global blendmode
+    global transparency
     #img_queue = []
 
     uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
-    outputDir = uppath(fileName,1)
-    if not os.path.exists(outputDir+'/processedImage'):
-        os.makedirs(outputDir+'/processedImage')
-
+    if(dirName == 'Null'):
+        dirName = uppath(fileName,1)
+    if not os.path.exists(dirName+'/'+outputName):
+        os.makedirs(dirName+'/'+outputName)
 
     index = 0
     vidcap = cv2.VideoCapture(fileName)
@@ -185,16 +199,7 @@ def processImage():
 
             output = Image.new("RGB",img_blend_raw.size,(255,255,255,255))
             output.paste(img_blend_raw)
-            if(quality_option=='Fast'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-            elif(quality_option=='Default'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-            elif(quality_option=='High'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-            elif(quality_option=='Original'):
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-            else:
-                output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
+            exporting(output,quality_option,dirName,outputName,index)
 
             #reset base
             img_base_float = img_blend_float
@@ -216,27 +221,50 @@ def processImage():
             count_label.configure(text="Image: "+str(index))
             exit_event.clear()
             break
-
-
     done = True
 
 
 root = Tk()
 root.title('image layering')
 
-canvas = Canvas(root,width=400,height=700)
+canvas = Canvas(root,width=400,height=800)
 canvas.pack()
 
-button_explore = Button(root,width=10,text="select File",command=browseFiles)
-button_explore.place(x=8,y=15)
-
-fileName_label = Label(root,text="")
-fileName_label.place(x=8,y=40)
 
 input_offset = tk.StringVar(root)
 input_transparent = tk.StringVar(root)
 input_quality = tk.StringVar(root)
+input_outputName = tk.StringVar(root)
+input_restart = tk.StringVar(root)
+
 input_mode = tk.StringVar(root)
+
+
+button_explore_label = Label(root,text="選擇影片檔")
+button_explore_label.place(x=8,y=20)
+button_explore = Button(root,width=10,text="select File",command=browseFiles)
+button_explore.place(x=6,y=45)
+
+fileName_label = Label(root,text="")
+fileName_label.place(x=8,y=70)
+
+button_dir_explore_label = Label(root,text="輸出資料夾位置")
+button_dir_explore_label.place(x=8,y=120)
+button_dir_explore = Button(root,width=10,text="select Dir",command=browseDirectory)
+button_dir_explore.place(x=6,y=145)
+dirName_label = Label(root,text="")
+dirName_label.place(x=8,y=170)
+
+
+outputName_label = Label(root,text="輸出資料夾名稱")
+outputName_label.place(x=8,y=220)
+outputName_input = Entry(root,width=20, textvariable=input_outputName)
+outputName_input.insert(20,'images')
+outputName_input.place(x=8,y=240)
+
+
+
+
 
 #offset_label = Label(root,text="疊加層數")
 #offset_label.place(x=8,y=80)
@@ -245,13 +273,13 @@ input_mode = tk.StringVar(root)
 #offset_input.place(x=10,y=100)
 
 transparent_label = Label(root,text="漸層程度 (0.00 ~ 1.00)")
-transparent_label.place(x=8,y=60)
+transparent_label.place(x=8,y=300)
 transparent_input = Entry(root,width=10,textvariable=input_transparent)
 transparent_input.insert(10,0.5)
-transparent_input.place(x=8,y=80)
+transparent_input.place(x=8,y=320)
 
 mode_label = Label(root,text="疊加模式")
-mode_label.place(x=8,y=120)
+mode_label.place(x=8,y=360)
 mode_input = ttk.Combobox(root, width = 10, textvariable = input_mode)
 mode_input['values'] = ('soft_light',
                           'lighten_only',
@@ -269,13 +297,13 @@ mode_input['values'] = ('soft_light',
                           'screen',
                           'normal',
                           )
-mode_input.place(x=8,y=140)
+mode_input.place(x=8,y=380)
 mode_input.current(0)
 
 quality_label = Label(root,text="輸出品質")
-quality_label_selection = Label(root,text="F:快速 D:一般 H:高解析 O:原檔")
-quality_label.place(x=8,y=240)
-quality_label_selection.place(x=8,y=260)
+quality_label.place(x=8,y=420)
+quality_label_selection = Label(root,text="Fast:快速壓縮  Default:無壓縮72dpi  Original:無壓縮150dpi")
+quality_label_selection.place(x=8,y=440)
 
 quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
 quality_input['values'] = ('Fast',
@@ -284,17 +312,17 @@ quality_input['values'] = ('Fast',
                           'Original_JPG',
                           'Original_PNG',
                           )
-quality_input.place(x=8,y=280)
+quality_input.place(x=8,y=470)
 quality_input.current(0)
 
-button_start = Button(root,width=10,text="start",command=startProgram)
-button_start.place(x=8,y=360)
+button_start = Button(root,width=10,text="Start",command=startProgram)
+button_start.place(x=8,y=520)
 
 count_label = Label(root,text="")
-count_label.place(x=8,y=390)
+count_label.place(x=8,y=550)
 
-button_stop = Button(root,width=10,text="Restart",command=stopProgram)
-button_stop.place(x=8,y=420)
+button_stop = Button(root,width=10,text="Stop",command=stopProgram)
+button_stop.place(x=8,y=580)
 
 #base_img_float = base_img.astype(float)
 root = mainloop()
