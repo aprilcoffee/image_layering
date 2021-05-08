@@ -1,0 +1,144 @@
+IMPORT cv2
+
+IMPORT glob, os
+
+IMPORT numpy as np
+
+from blend_modes IMPORT normal
+
+from blend_modes IMPORT lighten_only
+
+IMPORT cv2
+
+from PIL IMPORT Image, ImageTk
+
+IMPORT time,sys
+
+
+
+DEFINE FUNCTION RETURNCameraIndexes():
+
+    # checks the first 10 indexes.
+
+    SET index TO 0
+
+    SET arr TO []
+
+    SET i TO 10
+
+    WHILE i > 0:
+
+        SET cap TO cv2.VideoCapture(index)
+
+        IF cap.read()[0]:
+
+            arr.append(index)
+
+            cap.release()
+
+        index += 1
+
+        i -= 1
+
+    RETURN arr
+
+
+
+OUTPUT(RETURNCameraIndexes())
+
+
+
+SET new TO False
+
+SET cap TO cv2.VideoCapture(1)
+
+#cap.set(cv2.CV_CAP_PROP_FPS,30)
+
+#while True:
+
+SET #ret TO cap.set(0,720)
+
+SET index TO 0
+
+
+
+while(cap.isOpened()):
+
+    SET ret,frame TO cap.read()
+
+    #OUTPUT(index)
+
+    #index+=1
+
+    #if(index%5!=0):
+
+    #    continue
+
+    IF (new EQUALS False):
+
+        SET img_base TO (Image.fromarray(frame)).resize((1280,720),Image.ANTIALIAS)
+
+        SET img_base TO np.uint8(img_base)
+
+        SET img_base TO cv2.cvtColor(img_base, cv2.COLOR_RGB2RGBA)
+
+        SET img_base[:, :, 3] TO 255
+
+        SET img_base_float TO img_base.astype(np.float32)
+
+        #img_queue.append(img_base_float)
+
+        SET #img_base TO numpy.uint8(img_base_float)
+
+        SET #img_base_raw TO Image.fromarray(img_base)
+
+        SET new TO True
+
+        continue
+
+    SET img_layer TO (Image.fromarray(frame)).resize((1280,720),Image.ANTIALIAS)
+
+    SET img_layer TO np.uint8(img_layer)
+
+    SET img_layer TO cv2.cvtColor(img_layer, cv2.COLOR_RGB2RGBA)
+
+    SET img_layer[:, :, 3] TO 255
+
+    SET img_layer_float TO img_layer.astype(np.float32)
+
+
+
+    SET img_blend_float TO np.maximum(img_base_float,img_layer_float)
+
+    SET img_blend TO np.uint8(img_blend_float)
+
+    img_blend_raw=Image.fromarray(img_blend).resize((1280,720),Image.ANTIALIAS)
+
+    SET img_blend TO np.uint8(img_blend_raw)
+
+
+    SET img_base_float TO img_blend_float
+
+
+
+    SET key TO cv2.waitKey(1)
+
+    IF key==32:
+
+        SET new TO False
+
+    IF key==27 or key==ord('q'):
+
+        break
+
+    SET done TO True
+
+    cv2.imshow('frame',img_blend)
+
+
+
+OUTPUT('direct out')
+
+cap.release()
+
+cv2.destroyAllWindows()

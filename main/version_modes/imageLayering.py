@@ -48,7 +48,7 @@ def startProgram():
     global offset
     global transparency
     global blendmode
-
+    global quality_option
     #offset = int(input_offset.get())
     transparency = float(input_transparent.get())
     quality_option = str(input_quality.get())
@@ -69,10 +69,31 @@ def stopProgram():
 def savingPhoto():
     print('saved')
 
+def exporting(output,quality_option,dirName,outputName,index):
+    if(quality_option=='Fast'):
+        #print('Fast')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',quality='low',subsampling=2)
+    elif(quality_option=='Default_JPG'):
+        #print('Default')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72],quality='web_maximum',subsampling=0)
+    elif(quality_option=='Default_PNG'):
+        #print('Default')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[72,72])
+    elif(quality_option=='Original_JPG'):
+        #print('High')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[150,150],quality='web_maximum',subsampling=0)
+    elif(quality_option=='Original_PNG'):
+        #print('Original')
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.png',dpi=[150,150])
+    else:
+        output.save(dirName+'/'+outputName+'/'+'frame'+str(index)+'.jpg',dpi=[72,72])
+
+
 def processImage():
     global fileName
     global exit_event
     global done
+    global quality_option
     #img_queue = []
 
     uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
@@ -99,17 +120,7 @@ def processImage():
     #show image
     #img = ImageTk.PhotoImage(output.resize((800,600),Image.ANTIALIAS))
     #canvas.create_image(200,100,image=img,anchor=NW)
-
-    if(quality_option=='Fast'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='low',subsampling=2)
-    elif(quality_option=='Default'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
-    elif(quality_option=='High'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='maximum',subsampling=0)
-    elif(quality_option=='Original'):
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg',quality='web_maximum',subsampling=0)
-    else:
-        output.save(outputDir+'/processedImage/frame'+str(index)+'.jpg')
+    exporting(output,quality_option,dirName,outputName,index)
 
     img_trans = Image.fromarray(img_base)
     img_trans_float = img_base_float
@@ -268,9 +279,10 @@ quality_label_selection.place(x=8,y=260)
 
 quality_input = ttk.Combobox(root, width = 10, textvariable = input_quality)
 quality_input['values'] = ('Fast',
-                          'Default',
-                          'High',
-                          'Original',
+                          'Default_JPG',
+                          'Default_PNG',
+                          'Original_JPG',
+                          'Original_PNG',
                           )
 quality_input.place(x=8,y=280)
 quality_input.current(0)
