@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['main/version_realtime_darken/imageLayering.py']
+APP = ['main/index.py']
 DATA_FILES = []
 OPTIONS = {}
 
