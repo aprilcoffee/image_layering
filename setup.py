@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['main/version_modes/imageLayering.py']
+APP = ['main/index.py']
 DATA_FILES = []
 OPTIONS = {}
 
