@@ -25,6 +25,7 @@ done = False
 offset = 100
 transparency = 0.1
 quality_option = ""
+mode_option = ""
 img_size_opacity = []
 startNum = 0
 
@@ -44,10 +45,13 @@ def startProgram():
     global outputName
     global startNum
     global quality_option
+    global mode_option
+
     #global transparency
 
     startNum = 0
     offset = int(input_offset.get())
+    mode_option = str(input_mode.get())
     outputName = str(input_outputName.get())
     #transparency = float(input_transparent.get())
     quality_option = str(input_quality.get())
@@ -67,8 +71,10 @@ def restartProgram():
     global outputName
     global startNum
     global quality_option
-    #global transparency
+    global mode_option
 
+    #global transparency
+    mode_option = str(input_mode.get())
     startNum = int(input_restart.get())
     offset = int(input_offset.get())
     outputName = str(input_outputName.get())
@@ -152,6 +158,7 @@ def processImage():
                 #add to array
                 if(offset!=-1):
                     img_queue.append(img_layer_restart)
+
     elif(startNum==0 or offset==-1):
         ret, frame = vidcap.read()
         img_base = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -195,7 +202,11 @@ def processImage():
             #    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],1)
             #    img_temp_base_float = img_temp_blend_float
             #img_blend_float = img_temp_base_float
-            img_blend = np.maximum.reduce(img_queue)
+
+            if(mode_option=='lighten_only'):
+                img_blend = np.maximum.reduce(img_queue)
+            else:
+                img_blend = np.minimum.reduce(img_queue)
             #img_blend = np.uint8(img_blend_float)
             img_blend_raw = Image.fromarray(img_blend)
             #counter
@@ -213,7 +224,10 @@ def processImage():
 
             if(index < offset or offset==-1):
                 #np.maximum
-                img_blend = np.maximum(img_base,img_layer)
+                if(mode_option=='lighten_only'):
+                    img_blend = np.maximum(img_base,img_layer)
+                else:
+                    img_blend = np.minimum(img_base,img_layer)
                 #img_blend_float = lighten_only(img_base_float,img_layer_float,0.5)
             else:
                 #start = time.process_time()
@@ -221,7 +235,10 @@ def processImage():
                 #img_temp_base = []
                 #for i in range(0,len(img_queue)):
                 #    img_temp_base.append(img_queue[i])
-                img_blend = np.maximum.reduce(img_queue)
+                if(mode_option=='lighten_only'):
+                    img_blend = np.maximum.reduce(img_queue)
+                else:
+                    img_blend = np.minimum.reduce(img_queue)
                 #img_temp_base_float = img_queue[0]
                 #for i in range(1,len(img_queue)):
                 #    img_temp_blend_float = lighten_only(img_temp_base_float,img_queue[i],0.5)
@@ -272,6 +289,7 @@ input_transparent = tk.StringVar(root)
 input_quality = tk.StringVar(root)
 input_outputName = tk.StringVar(root)
 input_restart = tk.StringVar(root)
+input_mode = tk.StringVar(root)
 
 button_explore_label = Label(root,text="選擇影片檔")
 button_explore_label.place(x=8,y=20)
@@ -322,26 +340,38 @@ quality_input['values'] = ('Fast',
 quality_input.place(x=8,y=440)
 quality_input.current(0)
 
+mode_label = Label(root,text="輸出模式 (lighten_only, darken_only)")
+mode_label.place(x=8,y=470)
+
+mode_input = ttk.Combobox(root, width = 10, textvariable = input_mode)
+mode_input['values'] = ('lighten_only',
+                        'darken_only',
+                        )
+mode_input.place(x=8,y=490)
+mode_input.current(0)
+
 button_start = Button(root,width=10,text="Start",command=startProgram)
-button_start.place(x=8,y=520)
+button_start.place(x=8,y=550)
 
 count_label = Label(root,text="")
-count_label.place(x=8,y=550)
+count_label.place(x=8,y=580)
 
 button_stop = Button(root,width=10,text="Stop",command=stopProgram)
-button_stop.place(x=8,y=580)
+button_stop.place(x=8,y=600)
 
+restart_label = Label(root,text="---------------------------------")
+restart_label.place(x=8,y=640)
 
 restart_label = Label(root,text="中途計算(當機用)")
-restart_label.place(x=8,y=640)
+restart_label.place(x=8,y=660)
 restart_label2 = Label(root,text="選擇從第幾張開始: (數字請大於疊加層數)")
-restart_label2.place(x=8,y=660)
+restart_label2.place(x=8,y=680)
 
 restart_num_input = Entry(root,width=10, textvariable=input_restart)
 restart_num_input.insert(10,1000)
-restart_num_input.place(x=8,y=680)
+restart_num_input.place(x=8,y=700)
 button_restart = Button(root,width=10,text="restart",command=restartProgram)
-button_restart.place(x=8,y=720)
+button_restart.place(x=8,y=760)
 
 
 #base_img_float = base_img.astype(float)
