@@ -49,8 +49,8 @@ root.configure(bg="black")
 
 B_mode = Button(root,width=12, text ="濾鏡多模式疊圖", command = execModes)
 B_cv2 = Button(root,width=12, text ="圖片亮度疊加", command = execCv2)
-B_realtimelight = Button(root,width=12, text ="疊圖即時監控", command = execRealtimeLight)
-B_realtimedark = Button(root,width=12, text ="疊圖即時監控", command = execRealtimeDark)
+B_realtimelight = Button(root,width=12, text ="即時監控(Light)", command = execRealtimeLight)
+B_realtimedark = Button(root,width=12, text ="即時監控(Dark)", command = execRealtimeDark)
 
 B_mode.place(x=45,y=40)
 B_cv2.place(x=45,y=80)
